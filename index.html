@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>오발레 아카데미 - 관리자 출결 현황</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#C4A882;--gold-dark:#A8896A;--bg:#FAF8F5;--bg2:#F3EDE4;--text:#3D3428;--text2:#6B5D4E;--muted:#A09080;--border:#EDE5D8;--white:#fff;--green:#16A34A;--green-bg:#F0FAF0;--red:#DC2626;--red-bg:#FEF2F2;--orange:#EA580C;--orange-bg:#FFF7ED;--blue:#2563EB;--blue-bg:#EFF6FF}
+body{font-family:'Pretendard',sans-serif;background:linear-gradient(168deg,var(--bg) 0%,var(--bg2) 40%,#EDE5D8 100%);min-height:100vh;color:var(--text);-webkit-font-smoothing:antialiased}
+.ct{max-width:580px;margin:0 auto;padding:0 16px}
+.header{text-align:center;padding:32px 0 20px;border-bottom:1px solid #E8DDD0;margin-bottom:20px}
+.header-inner{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.header p{font-size:13px;color:var(--muted);letter-spacing:1px}
+.card{background:var(--white);border-radius:18px;padding:20px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:14px}
+.date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.date-nav h2{font-size:18px;font-weight:700}
+.date-nav-btn{background:none;border:1.5px solid #D4C5B0;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;color:#8B7355;display:flex;align-items:center;justify-content:center}
+.date-nav-btn:hover{background:var(--white)}
+.date-input{font-family:inherit;font-size:15px;font-weight:600;color:var(--text);border:1.5px solid #E0D5C5;border-radius:10px;padding:8px 14px;background:var(--white);cursor:pointer;text-align:center}
+.date-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(196,168,130,.15)}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.summary-item{background:var(--bg);border-radius:10px;padding:12px 8px;text-align:center}
+.summary-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.summary-val{font-size:20px;font-weight:700}
+.summary-val.green{color:var(--green)}.summary-val.red{color:var(--red)}.summary-val.blue{color:var(--blue)}.summary-val.gold{color:var(--gold-dark)}
+.class-card{background:var(--white);border-radius:16px;border:1px solid var(--border);margin-bottom:12px;overflow:hidden}
+.class-header{padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.class-name{font-size:15px;font-weight:700}
+.class-time{font-size:14px;font-weight:600;color:var(--gold-dark)}
+.class-meta{display:flex;gap:8px;align-items:center;margin-top:4px}
+.class-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.b-green{background:var(--green-bg);color:var(--green)}.b-red{background:var(--red-bg);color:var(--red)}.b-blue{background:var(--blue-bg);color:var(--blue)}
+.section{padding:12px 18px}
+.section+.section{border-top:1px solid #F3EDE4}
+.section-title{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-title .dot{width:8px;height:8px;border-radius:50%}
+.dot-green{background:var(--green)}.dot-red{background:var(--red)}.dot-blue{background:var(--blue)}
+.student-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
+.student-row+.student-row{border-top:1px solid #F9F5EF}
+.student-name{font-size:14px;font-weight:500}
+.student-info{font-size:12px;color:var(--muted)}
+.student-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.tag-absent{background:#FEE2E2;color:var(--red)}
+.tag-makeup{background:#DBEAFE;color:var(--blue)}
+.tag-present{background:#DCFCE7;color:var(--green)}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--muted);font-size:14px}
+.spinner{width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0 40px;font-size:11px;color:#C4B8A8;line-height:1.8}
+.expected-count{font-size:22px;font-weight:700;color:var(--text)}
+.no-class{text-align:center;padding:60px 20px;color:var(--muted)}
+.no-class p{font-size:14px;line-height:1.6}
+.today-btn{font-family:inherit;font-size:13px;font-weight:500;color:var(--gold-dark);background:none;border:1.5px solid #D4C5B0;border-radius:8px;padding:6px 14px;cursor:pointer}
+.today-btn:hover{background:var(--bg)}
+</style>
+</head>
+<body>
+<div class="ct">
+  <div class="header">
+    <div class="header-inner">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="15" stroke="#C4A882" stroke-width="1.5"/><ellipse cx="16" cy="14" rx="4" ry="6" stroke="#C4A882" stroke-width="1.2"/><path d="M12 20 Q16 26 20 20" stroke="#C4A882" stroke-width="1.2"/><line x1="16" y1="8" x2="16" y2="6" stroke="#C4A882"/><circle cx="16" cy="5" r="1.5" fill="#C4A882"/></svg>
+      <h1>오발레 아카데미</h1>
+    </div>
+    <p>관리자 출결 현황</p>
+  </div>
+  <div id="content"></div>
+  <div class="footer">오발레 아카데미 · 관리자 출결 현황<br>실시간 데이터 기반</div>
+</div>
+<script>
+// ★★★ 본인의 Google Apps Script 웹앱 URL로 변경하세요 ★★★
+const API_URL = 'https://script.google.com/macros/s/AKfycbxvRPV-vUji9z24hognx_oVHpFAXtAtJ6mRW9_qUDzVAO5TTYK8pSjYUmJ6wnTcR59n/exec';
+
+let S = { date: todayStr(), data: null, loading: false, error: '' };
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function shiftDate(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDisplay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+
+async function api(p) {
+  const u = new URL(API_URL);
+  Object.keys(p).forEach(k => u.searchParams.append(k, p[k]));
+  try { const r = await fetch(u); return await r.json(); }
+  catch(e) { return { success: false, error: '서버 연결 실패' }; }
+}
+
+async function loadData() {
+  S.loading = true; S.error = ''; render();
+  const r = await api({ action: 'adminDaily', date: S.date });
+  S.loading = false;
+  if (!r.success) { S.error = r.error; render(); return; }
+  S.data = r; render();
+}
+
+function render() {
+  const el = document.getElementById('content');
+  
+  // 날짜 네비게이션
+  let html = `<div class="fade">
+    <div class="card" style="padding:16px 20px">
+      <div class="date-nav">
+        <button class="date-nav-btn" id="prevDay">‹</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="date" class="date-input" id="datePicker" value="${S.date}">
+          ${S.date !== todayStr() ? '<button class="today-btn" id="todayBtn">오늘</button>' : ''}
+        </div>
+        <button class="date-nav-btn" id="nextDay">›</button>
+      </div>
+      <div style="text-align:center"><h2 style="font-size:17px;font-weight:700">${formatDisplay(S.date)}</h2></div>
+    </div>`;
+
+  if (S.loading) {
+    html += `<div class="loading"><div class="spinner"></div>불러오는 중...</div>`;
+  } else if (S.error) {
+    html += `<div class="card" style="background:var(--red-bg);border-color:#FECACA;text-align:center;padding:20px;color:var(--red)">${S.error}</div>`;
+  } else if (S.data) {
+    const d = S.data;
+    // 요약
+    html += `<div class="summary">
+      <div class="summary-item"><p class="summary-label">수업</p><p class="summary-val gold">${d.summary.totalClasses}</p></div>
+      <div class="summary-item"><p class="summary-label">정규 학생</p><p class="summary-val green">${d.summary.totalRegular}</p></div>
+      <div class="summary-item"><p class="summary-label">결석</p><p class="summary-val red">${d.summary.totalAbsent}</p></div>
+      <div class="summary-item"><p class="summary-label">보강</p><p class="summary-val blue">${d.summary.totalMakeup}</p></div>
+    </div>`;
+
+    if (d.classes.length === 0) {
+      html += `<div class="card no-class"><p>📭 해당 날짜에 운영 중인 수업이 없습니다.</p></div>`;
+    } else {
+      for (const cls of d.classes) {
+        html += `<div class="class-card">
+          <div class="class-header">
+            <div>
+              <div class="class-name">${cls.className}</div>
+              <div class="class-meta">
+                <span class="class-badge b-green">출석 ${cls.regular.length}</span>
+                <span class="class-badge b-red">결석 ${cls.absent.length}</span>
+                <span class="class-badge b-blue">보강 ${cls.makeup.length}</span>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="class-time">${cls.time}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">예상 <span class="expected-count" style="font-size:16px">${cls.expectedCount}</span>명</div>
+            </div>
+          </div>`;
+
+        // 출석 예정 (정규 - 결석)
+        if (cls.regular.length > 0) {
+          html += `<div class="section"><div class="section-title"><div class="dot dot-green"></div>출석 예정 (${cls.regular.length}명)</div>`;
+          for (const st of cls.regular) {
+            html += `<div class="student-row"><div><span class="student-name">${st.name}</span></div><span class="student-tag tag-present">출석</span></div>`;
+          }
+          html += `</div>`;
+        }
+
+        // 결석
+        if (cls.absent.length > 0) {
+          html += `<div class="section"><div class="section-title"><div class="dot dot-red"></div>결석 (${cls.absent.length}명)</div>`;
+          for (const st of cls.absent) {
+            html += `<div class="student-row"><div><span class="student-name">${st.name}</span></div><span class="student-tag tag-absent">결석</span></div>`;
+          }
+          html += `</div>`;
+        }
+
+        // 보강 참여
+        if (cls.makeup.length > 0) {
+          html += `<div class="section"><div class="section-title"><div class="dot dot-blue"></div>보강 참여 (${cls.makeup.length}명)</div>`;
+          for (const st of cls.makeup) {
+            html += `<div class="student-row"><div><span class="student-name">${st.name}</span><span class="student-info" style="margin-left:8px">${st.originalClass}</span></div><span class="student-tag tag-makeup">보강</span></div>`;
+          }
+          html += `</div>`;
+        }
+
+        // 아무 학생도 없으면
+        if (cls.regular.length === 0 && cls.absent.length === 0 && cls.makeup.length === 0) {
+          html += `<div class="section" style="text-align:center;color:var(--muted);font-size:13px;padding:16px">배정된 학생이 없습니다</div>`;
+        }
+
+        html += `</div>`;
+      }
+    }
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+  bind();
+}
+
+function bind() {
+  document.getElementById('prevDay')?.addEventListener('click', () => { S.date = shiftDate(S.date, -1); loadData(); });
+  document.getElementById('nextDay')?.addEventListener('click', () => { S.date = shiftDate(S.date, 1); loadData(); });
+  document.getElementById('todayBtn')?.addEventListener('click', () => { S.date = todayStr(); loadData(); });
+  document.getElementById('datePicker')?.addEventListener('change', (e) => { S.date = e.target.value; loadData(); });
+}
+
+// 초기 로드
+render();
+loadData();
+</script>
+</body>
+</html>
