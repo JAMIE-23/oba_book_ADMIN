@@ -165,7 +165,7 @@ function render() {
         if (cls.regular.length > 0) {
           html += `<div class="section"><div class="section-title"><div class="dot dot-green"></div>출석 예정 (${cls.regular.length}명)</div>`;
           for (const st of cls.regular) {
-            html += `<div class="student-row"><div><span class="student-name">${st.name}</span></div><span class="student-tag tag-present">출석</span></div>`;
+            html += `<div class="student-row"><div><span class="student-name">${st.name}</span>${st.isNew?'<span class="student-tag tag-new" style="background:#FEF3C7;color:#D97706;margin-left:6px">신규</span>':''}</div><span class="student-tag tag-present">출석</span></div>`;
           }
           html += `</div>`;
         }
@@ -174,7 +174,7 @@ function render() {
         if (cls.absent.length > 0) {
           html += `<div class="section"><div class="section-title"><div class="dot dot-red"></div>결석 (${cls.absent.length}명)</div>`;
           for (const st of cls.absent) {
-            html += `<div class="student-row"><div><span class="student-name">${st.name}</span></div><span class="student-tag tag-absent">결석</span></div>`;
+            html += `<div class="student-row"><div><span class="student-name">${st.name}</span>${st.isNew?'<span class="student-tag tag-new" style="background:#FEF3C7;color:#D97706;margin-left:6px">신규</span>':''}</div><span class="student-tag tag-absent">결석</span></div>`;
           }
           html += `</div>`;
         }
